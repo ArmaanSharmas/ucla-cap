@@ -122,7 +122,9 @@ export default function PlayerPool() {
   useEffect(() => { fetchPlayers() }, [filters])
 
   useEffect(() => {
-    schoolsApi.getAll().then(r => setSchools(r.data)).catch(() => {})
+    schoolsApi.getAll().then(r => {
+      if (Array.isArray(r?.data)) setSchools(r.data)
+    }).catch(() => {})
   }, [])
 
   const sorted = useMemo(() => {
