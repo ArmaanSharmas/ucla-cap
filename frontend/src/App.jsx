@@ -1,4 +1,23 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Component } from 'react'
+
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null } }
+  static getDerivedStateFromError(e) { return { error: e } }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 32, fontFamily: 'monospace', background: '#fff', color: '#111', minHeight: '100vh' }}>
+          <h2 style={{ color: '#c00' }}>Render error</h2>
+          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+            {this.state.error?.message}{'\n\n'}{this.state.error?.stack}
+          </pre>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 import { SettingsProvider } from './context/SettingsContext'
 import { ToastProvider } from './context/ToastContext'
 import Layout from './components/Layout'
@@ -12,6 +31,7 @@ import Schools from './pages/Schools'
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <SettingsProvider>
       <ToastProvider>
       <BrowserRouter>
@@ -30,5 +50,6 @@ export default function App() {
       </BrowserRouter>
       </ToastProvider>
     </SettingsProvider>
+    </ErrorBoundary>
   )
 }
