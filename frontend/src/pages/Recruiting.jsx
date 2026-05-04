@@ -120,13 +120,13 @@ export default function Recruiting() {
       let results
       if (filters.player_type) {
         const res = await playersApi.getAll(params)
-        results = res.data
+        results = Array.isArray(res?.data) ? res.data : []
       } else {
         const [recruitRes, portalRes] = await Promise.all([
           playersApi.getAll({ ...params, player_type: 'Recruit' }),
           playersApi.getAll({ ...params, player_type: 'Portal' }),
         ])
-        results = [...recruitRes.data, ...portalRes.data]
+        results = [...(Array.isArray(recruitRes?.data) ? recruitRes.data : []), ...(Array.isArray(portalRes?.data) ? portalRes.data : [])]
       }
       setPlayers(results)
     } catch {

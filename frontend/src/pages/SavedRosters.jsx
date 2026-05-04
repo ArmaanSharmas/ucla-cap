@@ -103,7 +103,7 @@ export default function SavedRosters() {
       setLoading(true)
       setError(null)
       const res = await savedRostersApi.getAll()
-      setRosters(res.data)
+      if (Array.isArray(res?.data)) setRosters(res.data)
     } catch {
       setError('Failed to load saved rosters.')
     } finally {

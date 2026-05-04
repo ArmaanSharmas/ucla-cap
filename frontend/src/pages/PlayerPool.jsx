@@ -111,7 +111,7 @@ export default function PlayerPool() {
       if (filters.school) params.school = filters.school
       if (filters.search) params.search = filters.search
       const res = await playersApi.getAll(params)
-      setPlayers(res.data)
+      if (Array.isArray(res?.data)) setPlayers(res.data)
     } catch {
       setError('Failed to load players. Is the backend running?')
     } finally {

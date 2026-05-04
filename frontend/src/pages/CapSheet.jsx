@@ -174,9 +174,11 @@ export default function CapSheet() {
         capSheetApi.getAll(),
         playersApi.getAll(),
       ])
-      setServerEntries(capRes.data)
-      setLocalEntries(capRes.data)
-      setAllPlayers(playersRes.data)
+      if (Array.isArray(capRes?.data)) {
+        setServerEntries(capRes.data)
+        setLocalEntries(capRes.data)
+      }
+      if (Array.isArray(playersRes?.data)) setAllPlayers(playersRes.data)
     } catch {
       setError('Failed to load cap sheet. Is the backend running?')
     } finally {
