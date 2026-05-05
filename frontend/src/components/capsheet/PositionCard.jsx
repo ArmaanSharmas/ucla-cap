@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -17,6 +18,21 @@ export const COLORS = {
   LB:   { bg: 'bg-[#F9FAFB] dark:bg-gray-800/40',   border: 'border-[#D1D5DB] dark:border-gray-600/40',   text: 'text-[#4B5563] dark:text-gray-300',   bar: 'bg-[#4B5563] dark:bg-gray-500',   hdr: 'bg-[#F9FAFB] dark:bg-gray-800/20',  hex: '#4B5563' },
   CB:   { bg: 'bg-[#ECFEFF] dark:bg-cyan-950/30',   border: 'border-[#A5F3FC] dark:border-cyan-800/40',   text: 'text-[#0891B2] dark:text-cyan-300',   bar: 'bg-[#0EA5E9] dark:bg-cyan-500',   hdr: 'bg-[#ECFEFF] dark:bg-cyan-950/20',  hex: '#0EA5E9' },
   S:    { bg: 'bg-[#FFFBEB] dark:bg-amber-950/20',  border: 'border-[#FDE68A] dark:border-amber-700/30',  text: 'text-[#92680B] dark:text-amber-300',  bar: 'bg-[#F2A900] dark:bg-amber-500',  hdr: 'bg-[#FFFBEB] dark:bg-amber-950/10', hex: '#F2A900' },
+}
+
+// ── Tier logic ────────────────────────────────────────────────────────────────
+export function getTier(entry) {
+  if (entry.string_number === 1 && (entry.player.coach_rating ?? 0) >= 4) return 'star'
+  if (entry.string_number === 1) return 'starter'
+  if (entry.string_number === 2) return 'rotation'
+  return 'bench'
+}
+
+export const TIER_META = {
+  star:     { label: 'Star',     border: 'border-l-[3px] border-amber-400',                        bg: 'bg-amber-50/40 dark:bg-amber-900/10' },
+  starter:  { label: 'Starter',  border: 'border-l-[3px] border-blue-400',                         bg: 'bg-blue-50/30 dark:bg-blue-900/10'   },
+  rotation: { label: 'Rotation', border: 'border-l-[3px] border-emerald-400',                      bg: 'bg-emerald-50/30 dark:bg-emerald-900/10' },
+  bench:    { label: 'Bench',    border: 'border-l-[3px] border-gray-200 dark:border-gray-700/60', bg: '' },
 }
 
 export function getEffectiveSalary(player) {
@@ -39,16 +55,17 @@ function GripIcon({ className = 'w-3.5 h-3.5' }) {
 }
 
 // ── Player row (pure UI) ──────────────────────────────────────────────────────
-function PlayerRowContent({ entry, onRemove, dragListeners }) {
+function PlayerRowContent({ entry, onRemove, dragListeners, tier = 'bench' }) {
   const { player } = entry
   const salary = getEffectiveSalary(player)
   const isActual = player.actual_salary != null
   const contractMissing = !hasContract(player)
   const rec = getRetentionRec(player)
   const recStyle = rec ? RETENTION_STYLES[rec] : null
+  const ts = TIER_META[tier]
 
   return (
-    <div className="flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 group/row transition-colors select-none">
+    <div className={`flex items-center justify-between px-2.5 py-2 rounded-lg hover:brightness-[0.97] dark:hover:bg-white/5 group/row transition-colors select-none ${ts.border} ${ts.bg}`}>
       <div className="flex items-center gap-2 min-w-0">
         <button
           {...dragListeners}
@@ -142,6 +159,7 @@ function PlayerRowContent({ entry, onRemove, dragListeners }) {
 
 // ── Sortable player row ───────────────────────────────────────────────────────
 function SortablePlayerRow({ entry, onRemove }) {
+  const tier = getTier(entry)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `entry-${entry.id}`,
     data: { type: 'player', entry },
@@ -154,7 +172,7 @@ function SortablePlayerRow({ entry, onRemove }) {
       className={isDragging ? 'opacity-25' : ''}
       {...attributes}
     >
-      <PlayerRowContent entry={entry} onRemove={onRemove} dragListeners={listeners} />
+      <PlayerRowContent entry={entry} onRemove={onRemove} dragListeners={listeners} tier={tier} />
     </div>
   )
 }
@@ -349,9 +367,19 @@ export default function PositionCard({
                     {isPlayerDropTarget ? 'Drop to add to ' + position : 'No players — drag here'}
                   </div>
                 ) : (
-                  entries.map(entry => (
-                    <SortablePlayerRow key={entry.id} entry={entry} onRemove={onRemove} />
-                  ))
+                  entries.map((entry, idx) => {
+                    const currTier = getTier(entry)
+                    const prevTier = idx > 0 ? getTier(entries[idx - 1]) : null
+                    const showDivider = prevTier !== null && prevTier !== currTier
+                    return (
+                      <Fragment key={entry.id}>
+                        {showDivider && (
+                          <div className="mx-3 my-1 border-t border-dashed border-gray-100 dark:border-gray-700/50" />
+                        )}
+                        <SortablePlayerRow entry={entry} onRemove={onRemove} />
+                      </Fragment>
+                    )
+                  })
                 )}
               </div>
             </SortableContext>
