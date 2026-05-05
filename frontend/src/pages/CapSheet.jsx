@@ -605,10 +605,10 @@ export default function CapSheet() {
       <div className="flex items-center gap-5 px-8 py-2 bg-white dark:bg-[#1A2840] border-b border-gray-100 dark:border-[#1F3351] flex-shrink-0">
         <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">Tiers</span>
         {[
-          { tier: 'star',     dotColor: 'bg-amber-400',                          desc: '1st string · rated 4–5★' },
-          { tier: 'starter',  dotColor: 'bg-blue-400',                           desc: '1st string'               },
-          { tier: 'rotation', dotColor: 'bg-emerald-400',                        desc: '2nd string'               },
-          { tier: 'bench',    dotColor: 'bg-gray-300 dark:bg-gray-600',          desc: '3rd string+'              },
+          { tier: 'star',     dotColor: 'bg-purple-400', desc: '1st string · rated 4–5★' },
+          { tier: 'starter',  dotColor: 'bg-green-400',  desc: '1st string'               },
+          { tier: 'rotation', dotColor: 'bg-yellow-400', desc: '2nd string'               },
+          { tier: 'bench',    dotColor: 'bg-red-400',    desc: '3rd string+'              },
         ].map(({ tier, dotColor, desc }) => (
           <div key={tier} className="flex items-center gap-1.5" title={desc}>
             <div className={`w-[3px] h-3.5 rounded-full ${dotColor} flex-shrink-0`} />

@@ -29,10 +29,10 @@ export function getTier(entry) {
 }
 
 export const TIER_META = {
-  star:     { label: 'Star',     border: 'border-l-[3px] border-amber-400',                        bg: 'bg-amber-50/40 dark:bg-amber-900/10' },
-  starter:  { label: 'Starter',  border: 'border-l-[3px] border-blue-400',                         bg: 'bg-blue-50/30 dark:bg-blue-900/10'   },
-  rotation: { label: 'Rotation', border: 'border-l-[3px] border-emerald-400',                      bg: 'bg-emerald-50/30 dark:bg-emerald-900/10' },
-  bench:    { label: 'Bench',    border: 'border-l-[3px] border-gray-200 dark:border-gray-700/60', bg: '' },
+  star:     { label: 'Star',     border: 'border-l-[3px] border-purple-400',  bg: 'bg-purple-50/40 dark:bg-purple-900/10' },
+  starter:  { label: 'Starter',  border: 'border-l-[3px] border-green-400',   bg: 'bg-green-50/30 dark:bg-green-900/10'   },
+  rotation: { label: 'Rotation', border: 'border-l-[3px] border-yellow-400',  bg: 'bg-yellow-50/30 dark:bg-yellow-900/10' },
+  bench:    { label: 'Bench',    border: 'border-l-[3px] border-red-400',     bg: 'bg-red-50/20 dark:bg-red-900/10'       },
 }
 
 export function getEffectiveSalary(player) {
