@@ -39,6 +39,7 @@ class CapSheetEntry(Base):
     player_id = Column(Integer, ForeignKey("players.id", ondelete="CASCADE"), unique=True, nullable=False)
     depth_chart_position = Column(String(20), nullable=False)
     string_number = Column(Integer, nullable=False, default=1)
+    tier = Column(String(20), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     player = relationship("Player", back_populates="cap_sheet_entry")

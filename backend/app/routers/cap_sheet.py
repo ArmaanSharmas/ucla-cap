@@ -46,7 +46,7 @@ def update_cap_sheet_entry(
     db_entry = db.query(models.CapSheetEntry).filter(models.CapSheetEntry.id == entry_id).first()
     if not db_entry:
         raise HTTPException(status_code=404, detail="Entry not found")
-    for key, value in entry.model_dump(exclude_none=True).items():
+    for key, value in entry.model_dump(exclude_unset=True).items():
         setattr(db_entry, key, value)
     db.commit()
     db.refresh(db_entry)

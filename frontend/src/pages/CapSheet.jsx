@@ -338,6 +338,17 @@ export default function CapSheet() {
     }
   }
 
+  async function handleChangeTier(entryId, tier) {
+    setLocalEntries(prev => prev.map(e => e.id === entryId ? { ...e, tier } : e))
+    try {
+      await capSheetApi.update(entryId, { tier })
+      setServerEntries(prev => prev.map(e => e.id === entryId ? { ...e, tier } : e))
+    } catch {
+      toast.error('Failed to save tier')
+      setLocalEntries(serverEntries)
+    }
+  }
+
   async function handleRemove(entryId) {
     try {
       await capSheetApi.remove(entryId)
@@ -490,6 +501,7 @@ export default function CapSheet() {
                 focused={true}
                 onFocus={setFocusedPos}
                 onRemove={handleRemove}
+                onChangeTier={handleChangeTier}
                 activeId={activeId}
               />
               <DragOverlay>
@@ -639,6 +651,7 @@ export default function CapSheet() {
                   focused={false}
                   onFocus={setFocusedPos}
                   onRemove={handleRemove}
+                  onChangeTier={handleChangeTier}
                   activeId={activeId}
                 />
               ))}

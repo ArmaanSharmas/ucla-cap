@@ -43,6 +43,7 @@ class CapSheetEntryBase(BaseModel):
     player_id: int
     depth_chart_position: str
     string_number: int = 1
+    tier: Optional[str] = None
 
 
 class CapSheetEntryCreate(CapSheetEntryBase):
@@ -52,6 +53,7 @@ class CapSheetEntryCreate(CapSheetEntryBase):
 class CapSheetEntryUpdate(BaseModel):
     depth_chart_position: Optional[str] = None
     string_number: Optional[int] = None
+    tier: Optional[str] = None
 
 
 class CapSheetEntryOut(CapSheetEntryBase):

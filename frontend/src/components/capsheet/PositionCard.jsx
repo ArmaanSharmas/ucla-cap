@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -22,17 +22,47 @@ export const COLORS = {
 
 // ── Tier logic ────────────────────────────────────────────────────────────────
 export function getTier(entry) {
-  if (entry.string_number === 1 && (entry.player.coach_rating ?? 0) >= 4) return 'star'
-  if (entry.string_number === 1) return 'starter'
-  if (entry.string_number === 2) return 'rotation'
-  return 'bench'
+  return entry.tier || null
 }
 
 export const TIER_META = {
-  star:     { label: 'Star',     border: 'border-l-[3px] border-purple-400',  bg: 'bg-purple-50/40 dark:bg-purple-900/10' },
-  starter:  { label: 'Starter',  border: 'border-l-[3px] border-green-400',   bg: 'bg-green-50/30 dark:bg-green-900/10'   },
-  rotation: { label: 'Rotation', border: 'border-l-[3px] border-yellow-400',  bg: 'bg-yellow-50/30 dark:bg-yellow-900/10' },
-  bench:    { label: 'Bench',    border: 'border-l-[3px] border-red-400',     bg: 'bg-red-50/20 dark:bg-red-900/10'       },
+  star:     { label: 'Star',     border: 'border-l-[3px] border-purple-400',              bg: 'bg-purple-50/40 dark:bg-purple-900/10', badge: 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800' },
+  starter:  { label: 'Starter',  border: 'border-l-[3px] border-green-400',               bg: 'bg-green-50/30 dark:bg-green-900/10',   badge: 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800'   },
+  rotation: { label: 'Rotation', border: 'border-l-[3px] border-yellow-400',              bg: 'bg-yellow-50/30 dark:bg-yellow-900/10', badge: 'bg-yellow-100 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800' },
+  bench:    { label: 'Bench',    border: 'border-l-[3px] border-red-400',                 bg: 'bg-red-50/20 dark:bg-red-900/10',       badge: 'bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'               },
+}
+
+const TIER_OPTIONS = ['star', 'starter', 'rotation', 'bench']
+
+function TierBadge({ tier, onChangeTier }) {
+  const [editing, setEditing] = useState(false)
+  if (editing) {
+    return (
+      <select
+        autoFocus
+        value={tier || ''}
+        className="input py-0 px-1.5 h-5 text-[10px] w-24 flex-shrink-0"
+        onBlur={() => setEditing(false)}
+        onChange={e => { onChangeTier(e.target.value || null); setEditing(false) }}
+        onClick={e => e.stopPropagation()}
+        onPointerDown={e => e.stopPropagation()}
+      >
+        <option value="">Unassigned</option>
+        {TIER_OPTIONS.map(t => <option key={t} value={t}>{TIER_META[t].label}</option>)}
+      </select>
+    )
+  }
+  return (
+    <button
+      onClick={e => { e.stopPropagation(); setEditing(true) }}
+      onPointerDown={e => e.stopPropagation()}
+      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0 hover:opacity-80 transition-opacity ${
+        tier ? TIER_META[tier].badge : 'border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500'
+      }`}
+    >
+      {tier ? TIER_META[tier].label : 'Set tier'}
+    </button>
+  )
 }
 
 export function getEffectiveSalary(player) {
@@ -55,17 +85,17 @@ function GripIcon({ className = 'w-3.5 h-3.5' }) {
 }
 
 // ── Player row (pure UI) ──────────────────────────────────────────────────────
-function PlayerRowContent({ entry, onRemove, dragListeners, tier = 'bench' }) {
+function PlayerRowContent({ entry, onRemove, dragListeners, tier, onChangeTier }) {
   const { player } = entry
   const salary = getEffectiveSalary(player)
   const isActual = player.actual_salary != null
   const contractMissing = !hasContract(player)
   const rec = getRetentionRec(player)
   const recStyle = rec ? RETENTION_STYLES[rec] : null
-  const ts = TIER_META[tier]
+  const ts = tier ? TIER_META[tier] : { border: 'border-l-[3px] border-transparent', bg: '' }
 
   return (
-    <div className={`flex items-center justify-between px-2.5 py-2 rounded-lg hover:brightness-[0.97] dark:hover:bg-white/5 group/row transition-colors select-none ${ts.border} ${ts.bg}`}>
+    <div className={`flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 group/row transition-colors select-none ${ts.border} ${ts.bg}`}>
       <div className="flex items-center gap-2 min-w-0">
         <button
           {...dragListeners}
@@ -112,6 +142,7 @@ function PlayerRowContent({ entry, onRemove, dragListeners, tier = 'bench' }) {
                   {rec}
                 </span>
               )}
+              <TierBadge tier={tier} onChangeTier={onChangeTier} />
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-xs text-gray-400 leading-snug">{player.position} · {player.year}</span>
@@ -158,7 +189,7 @@ function PlayerRowContent({ entry, onRemove, dragListeners, tier = 'bench' }) {
 }
 
 // ── Sortable player row ───────────────────────────────────────────────────────
-function SortablePlayerRow({ entry, onRemove }) {
+function SortablePlayerRow({ entry, onRemove, onChangeTier }) {
   const tier = getTier(entry)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `entry-${entry.id}`,
@@ -172,7 +203,13 @@ function SortablePlayerRow({ entry, onRemove }) {
       className={isDragging ? 'opacity-25' : ''}
       {...attributes}
     >
-      <PlayerRowContent entry={entry} onRemove={onRemove} dragListeners={listeners} tier={tier} />
+      <PlayerRowContent
+        entry={entry}
+        onRemove={onRemove}
+        dragListeners={listeners}
+        tier={tier}
+        onChangeTier={newTier => onChangeTier(entry.id, newTier)}
+      />
     </div>
   )
 }
@@ -236,6 +273,7 @@ export default function PositionCard({
   collapsed, onToggle,
   focused, onFocus,
   onRemove,
+  onChangeTier,
   activeId,
 }) {
   const c = COLORS[position] || COLORS.QB
@@ -376,7 +414,7 @@ export default function PositionCard({
                         {showDivider && (
                           <div className="mx-3 my-1 border-t border-dashed border-gray-100 dark:border-gray-700/50" />
                         )}
-                        <SortablePlayerRow entry={entry} onRemove={onRemove} />
+                        <SortablePlayerRow entry={entry} onRemove={onRemove} onChangeTier={onChangeTier} />
                       </Fragment>
                     )
                   })

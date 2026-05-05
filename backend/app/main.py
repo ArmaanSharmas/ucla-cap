@@ -20,6 +20,10 @@ with engine.connect() as conn:
         ADD COLUMN IF NOT EXISTS last_contact_date VARCHAR(20),
         ADD COLUMN IF NOT EXISTS photo_path VARCHAR(255)
     """))
+    conn.execute(text("""
+        ALTER TABLE cap_sheet_entries
+        ADD COLUMN IF NOT EXISTS tier VARCHAR(20)
+    """))
     conn.commit()
 
 app = FastAPI(title="UCLA CAP API", version="3.0.0")
