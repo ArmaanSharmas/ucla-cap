@@ -69,22 +69,13 @@ export default function Layout() {
       {/* Sidebar */}
       <aside className="w-56 flex-shrink-0 flex flex-col bg-ucla-navy border-r border-ucla-navy-dark">
         {/* Logo */}
-        <div className="flex flex-col px-5 pt-5 pb-4 border-b border-white/10">
-          {siteLogo ? (
-            <img
-              src={siteLogo}
-              alt="Site Logo"
-              className="h-10 w-auto object-contain mb-1"
-              style={{ maxWidth: '100%' }}
-            />
-          ) : (
-            <span
-              style={{ fontFamily: "'Pacifico', cursive", color: '#F2A900', fontSize: '1.65rem', lineHeight: 1, letterSpacing: '0.02em' }}
-            >
-              UCLA
-            </span>
-          )}
-          <div className="text-white/50 text-xs mt-1 tracking-wide">Roster Management</div>
+        <div className="flex flex-col items-center px-5 pt-5 pb-4 border-b border-white/10">
+          <img
+            src="/ucla-bruins.png"
+            alt="UCLA Bruins"
+            className="h-14 w-auto object-contain"
+          />
+          <div className="text-white/50 text-xs mt-2 tracking-wide">Roster Management</div>
         </div>
 
         {/* Nav */}
