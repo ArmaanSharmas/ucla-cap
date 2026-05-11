@@ -15,6 +15,7 @@ function formatCurrency(val) {
 
 export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers }) {
   const [search, setSearch] = useState('')
+  const [filterPos, setFilterPos] = useState('')
   const [selected, setSelected] = useState(null)
   const [positionGroup, setPositionGroup] = useState('')
   const [stringNumber, setStringNumber] = useState(1)
@@ -24,6 +25,7 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
   useEffect(() => {
     if (isOpen) {
       setSearch('')
+      setFilterPos('')
       setSelected(null)
       setPositionGroup('')
       setStringNumber(1)
@@ -37,16 +39,27 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
     }
   }, [selected])
 
+  function handleFilterPos(pos) {
+    const next = filterPos === pos ? '' : pos
+    setFilterPos(next)
+    if (next) setPositionGroup(next)
+    setSelected(null)
+  }
+
   const filtered = useMemo(() => {
-    if (!search.trim()) return availablePlayers
-    const q = search.toLowerCase()
-    return availablePlayers.filter(
-      p => p.name.toLowerCase().includes(q) ||
-           p.school.toLowerCase().includes(q) ||
-           p.position.toLowerCase().includes(q) ||
-           getPositionGroup(p.position).toLowerCase().includes(q)
-    )
-  }, [search, availablePlayers])
+    let list = availablePlayers
+    if (filterPos) list = list.filter(p => getPositionGroup(p.position) === filterPos)
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(
+        p => p.name.toLowerCase().includes(q) ||
+             p.school.toLowerCase().includes(q) ||
+             p.position.toLowerCase().includes(q) ||
+             getPositionGroup(p.position).toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [search, filterPos, availablePlayers])
 
   async function handleAdd() {
     if (!selected) { setError('Select a player first'); return }
@@ -93,6 +106,23 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
               onChange={e => { setSearch(e.target.value); setSelected(null) }}
               autoFocus
             />
+          </div>
+
+          {/* Position filter chips */}
+          <div className="flex flex-wrap gap-1.5">
+            {POSITION_GROUPS.map(pos => (
+              <button
+                key={pos}
+                onClick={() => handleFilterPos(pos)}
+                className={`px-2 py-0.5 rounded text-xs font-semibold border transition-colors ${
+                  filterPos === pos
+                    ? 'bg-ucla-blue text-white border-ucla-blue'
+                    : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-ucla-blue hover:text-ucla-blue'
+                }`}
+              >
+                {pos}
+              </button>
+            ))}
           </div>
 
           {/* Player list */}
