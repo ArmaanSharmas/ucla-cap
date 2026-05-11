@@ -18,7 +18,6 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
   const [filterPos, setFilterPos] = useState('')
   const [selected, setSelected] = useState(null)
   const [positionGroup, setPositionGroup] = useState('')
-  const [stringNumber, setStringNumber] = useState(1)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -28,7 +27,6 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
       setFilterPos('')
       setSelected(null)
       setPositionGroup('')
-      setStringNumber(1)
       setError('')
     }
   }, [isOpen])
@@ -70,7 +68,6 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
       await onAdd({
         player_id: selected.id,
         depth_chart_position: positionGroup,
-        string_number: stringNumber,
       })
     } catch (e) {
       setError(e?.response?.data?.detail || 'Failed to add player')
@@ -170,26 +167,13 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
             </div>
           )}
 
-          {/* Position group + string number */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">Position Group</label>
-              <select className="input" value={positionGroup} onChange={e => setPositionGroup(e.target.value)}>
-                <option value="">Select</option>
-                {POSITION_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">Depth Chart #</label>
-              <input
-                className="input"
-                type="number"
-                min={1}
-                max={20}
-                value={stringNumber}
-                onChange={e => setStringNumber(parseInt(e.target.value) || 1)}
-              />
-            </div>
+          {/* Position group */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Position Group</label>
+            <select className="input" value={positionGroup} onChange={e => setPositionGroup(e.target.value)}>
+              <option value="">Select</option>
+              {POSITION_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
           </div>
 
           {error && <p className="text-sm text-red-400">{error}</p>}

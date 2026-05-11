@@ -359,7 +359,9 @@ export default function CapSheet() {
   }
 
   async function handleAdd(data) {
-    await capSheetApi.add(data)
+    const posEntries = grouped[data.depth_chart_position] || []
+    const maxStr = posEntries.reduce((m, e) => Math.max(m, e.string_number), 0)
+    await capSheetApi.add({ ...data, string_number: maxStr + 1 })
     setAddModalOpen(false)
     fetchAll()
   }

@@ -99,7 +99,7 @@ function PlayerRowContent({ entry, onRemove, dragListeners, tier, onChangeTier }
       <div className="flex items-center gap-2 min-w-0">
         <button
           {...dragListeners}
-          className="flex-shrink-0 p-0.5 opacity-0 group-hover/row:opacity-30 hover:!opacity-70 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+          className="flex-shrink-0 p-0.5 opacity-20 group-hover/row:opacity-60 hover:!opacity-90 transition-opacity cursor-grab active:cursor-grabbing touch-none"
           tabIndex={-1}
           onPointerDown={e => e.stopPropagation()}
         >
