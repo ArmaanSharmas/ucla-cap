@@ -1,6 +1,15 @@
 import { useMemo } from 'react'
-import { COLORS, POSITION_ORDER, getEffectiveSalary } from './PositionCard'
+import { COLORS, POSITION_ORDER, TIER_META, getEffectiveSalary } from './PositionCard'
 import { FLIGHT_RISK_COLORS, FLIGHT_RISK_LABELS } from '../../utils/player'
+
+const TIER_ORDER = ['star', 'starter', 'rotation', 'bench', 'unassigned']
+const TIER_HEX = {
+  star:       '#c084fc',
+  starter:    '#4ade80',
+  rotation:   '#facc15',
+  bench:      '#f87171',
+  unassigned: '#9ca3af',
+}
 
 function polarToCartesian(cx, cy, r, angleDeg) {
   const rad = ((angleDeg - 90) * Math.PI) / 180
@@ -42,6 +51,20 @@ export default function CapPieChart({ entriesByPosition, totalBudget, totalCapUs
     }).filter(d => d.total > 0),
     [entriesByPosition]
   )
+
+  const tierBreakdown = useMemo(() => {
+    const allEntries = Object.values(entriesByPosition).flat()
+    const acc = {}
+    for (const entry of allEntries) {
+      const tier = entry.tier || 'unassigned'
+      if (!acc[tier]) acc[tier] = { total: 0, count: 0 }
+      acc[tier].total += getEffectiveSalary(entry.player)
+      acc[tier].count++
+    }
+    return TIER_ORDER
+      .filter(t => acc[t])
+      .map(t => ({ tier: t, ...acc[t] }))
+  }, [entriesByPosition])
 
   const grandTotal = breakdown.reduce((s, d) => s + d.total, 0)
   if (grandTotal === 0) return null
@@ -199,15 +222,68 @@ export default function CapPieChart({ entriesByPosition, totalBudget, totalCapUs
         </div>
       </div>
 
-      {/* Flight risk legend — one central reference */}
-      <div className="flex items-center gap-4 px-6 py-2.5 border-t border-gray-100 dark:border-[#2D4A70] flex-wrap">
-        <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium flex-shrink-0">Flight Risk</span>
-        {[1,2,3,4,5].map(r => (
-          <div key={r} className="flex items-center gap-1.5 flex-shrink-0">
-            <div className={`w-2 h-2 rounded-full ${FLIGHT_RISK_COLORS[r]}`} />
-            <span className="text-[10px] text-gray-500 dark:text-gray-400">{r} — {FLIGHT_RISK_LABELS[r]}</span>
+      {/* Spending by tier */}
+      {tierBreakdown.length > 0 && (
+        <div className="border-t border-gray-100 dark:border-[#2D4A70] px-6 py-5">
+          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+            Spending by Tier
           </div>
-        ))}
+          <div className="space-y-3">
+            {tierBreakdown.map(({ tier, total, count }) => {
+              const label = tier === 'unassigned' ? 'Unassigned' : TIER_META[tier].label
+              const hex = TIER_HEX[tier]
+              const pctOfBudget = (total / totalBudget) * 100
+              const pctOfCap = (total / grandTotal) * 100
+              return (
+                <div key={tier} className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-1.5 w-24 flex-shrink-0">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: hex }} />
+                    <span className="text-xs font-bold text-gray-600 dark:text-gray-300">{label}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-3 rounded-full transition-[width] duration-700"
+                        style={{ width: `${Math.min(pctOfBudget, 100)}%`, backgroundColor: hex }}
+                      />
+                    </div>
+                  </div>
+                  <span className="w-16 text-right text-xs font-mono font-medium text-gray-700 dark:text-gray-300 tabular-nums flex-shrink-0">
+                    {fmtShort(total)}
+                  </span>
+                  <span className="w-10 text-right text-xs text-gray-400 tabular-nums flex-shrink-0">
+                    {pctOfCap.toFixed(1)}%
+                  </span>
+                  <span className="w-8 text-right text-xs text-gray-300 dark:text-gray-600 tabular-nums flex-shrink-0">
+                    {count}p
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Legends row */}
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-6 py-2.5 border-t border-gray-100 dark:border-[#2D4A70]">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium flex-shrink-0">Flight Risk</span>
+          {[1,2,3,4,5].map(r => (
+            <div key={r} className="flex items-center gap-1.5 flex-shrink-0">
+              <div className={`w-2 h-2 rounded-full ${FLIGHT_RISK_COLORS[r]}`} />
+              <span className="text-[10px] text-gray-500 dark:text-gray-400">{r} — {FLIGHT_RISK_LABELS[r]}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium flex-shrink-0">Tiers</span>
+          {TIER_ORDER.filter(t => t !== 'unassigned').map(t => (
+            <div key={t} className="flex items-center gap-1.5 flex-shrink-0">
+              <div className="w-[3px] h-3.5 rounded-full flex-shrink-0" style={{ backgroundColor: TIER_HEX[t] }} />
+              <span className="text-[10px] text-gray-500 dark:text-gray-400">{TIER_META[t].label}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
