@@ -17,7 +17,6 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
   const [search, setSearch] = useState('')
   const [filterPos, setFilterPos] = useState('')
   const [selected, setSelected] = useState(null)
-  const [positionGroup, setPositionGroup] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -26,21 +25,12 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
       setSearch('')
       setFilterPos('')
       setSelected(null)
-      setPositionGroup('')
       setError('')
     }
   }, [isOpen])
 
-  useEffect(() => {
-    if (selected) {
-      setPositionGroup(getPositionGroup(selected.position))
-    }
-  }, [selected])
-
   function handleFilterPos(pos) {
-    const next = filterPos === pos ? '' : pos
-    setFilterPos(next)
-    if (next) setPositionGroup(next)
+    setFilterPos(prev => prev === pos ? '' : pos)
     setSelected(null)
   }
 
@@ -61,13 +51,13 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
 
   async function handleAdd() {
     if (!selected) { setError('Select a player first'); return }
-    if (!positionGroup) { setError('Position group is required'); return }
+    if (!filterPos) { setError('Select a position group above first'); return }
     setSaving(true)
     setError('')
     try {
       await onAdd({
         player_id: selected.id,
-        depth_chart_position: positionGroup,
+        depth_chart_position: filterPos,
       })
     } catch (e) {
       setError(e?.response?.data?.detail || 'Failed to add player')
@@ -167,14 +157,6 @@ export default function AddToCapModal({ isOpen, onClose, onAdd, availablePlayers
             </div>
           )}
 
-          {/* Position group */}
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Position Group</label>
-            <select className="input" value={positionGroup} onChange={e => setPositionGroup(e.target.value)}>
-              <option value="">Select</option>
-              {POSITION_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
-          </div>
 
           {error && <p className="text-sm text-red-400">{error}</p>}
 

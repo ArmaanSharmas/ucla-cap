@@ -98,10 +98,10 @@ function PlayerRowContent({ entry, onRemove, dragListeners, tier, onChangeTier }
     <div className={`flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 group/row transition-colors select-none ${ts.border} ${ts.bg}`}>
       <div className="flex items-center gap-2 min-w-0">
         <button
+          onPointerDown={e => e.stopPropagation()}
           {...dragListeners}
           className="flex-shrink-0 p-0.5 opacity-20 group-hover/row:opacity-60 hover:!opacity-90 transition-opacity cursor-grab active:cursor-grabbing touch-none"
           tabIndex={-1}
-          onPointerDown={e => e.stopPropagation()}
         >
           <GripIcon className="w-3 h-3 text-gray-400" />
         </button>
